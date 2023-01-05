@@ -1,8 +1,12 @@
 import csv
+import os
 import random
 import json
 
-with open("../data/pv.csv") as pv_data:
+cwd = os.getcwd() # the path to the current directory
+pv_dataset_filepath = os.path.join(cwd, "..", "data", "pv.csv") # the path to the pv dataset
+
+with open(pv_dataset_filepath) as pv_data:
     reader = csv.DictReader(pv_data)
     force = []
     voltage = []
@@ -57,14 +61,16 @@ train_json = {"train_times": train_times, "train_force": train_force, "train_vol
 "train_acceleration1": train_acceleration1, "train_acceleration2": train_acceleration2,
 "train_acceleration3": train_acceleration3}
 
-test_json = {"test_times": test_times, "force": test_force, "voltage": test_voltage,
-"acceleration1": test_acceleration1, "acceleration2": test_acceleration2,
-"acceleration3": test_acceleration3}
+test_json = {"test_times": test_times, "test_force": test_force, "test_voltage": test_voltage,
+"test_acceleration1": test_acceleration1, "test_acceleration2": test_acceleration2,
+"test_acceleration3": test_acceleration3}
 
 #writing the json files
+mock_train_data_filepath = os.path.join(cwd, "..", "data", "mock_train_data.json")
+mock_test_data_filepath = os.path.join(cwd, "..", "data", "mock_test_data.json")
 
-with open("../data/mock_train_data.json", "w") as train_file:
+with open(mock_train_data_filepath, "w") as train_file:
     json.dump(train_json, train_file)
 
-with open("../data/mock_test_data.json", "w") as test_file:
+with open(mock_test_data_filepath, "w") as test_file:
     json.dump(test_json, test_file)

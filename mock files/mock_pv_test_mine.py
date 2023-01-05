@@ -1,8 +1,8 @@
-"""
-testig our fitted model. this is for the mock dataset"""
+"""This file tests the neural network on the mock test dataset"""
 
 
 import random
+import os
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,73 +11,12 @@ import torch.nn as n
 import FrEIA.framework as Ff
 import FrEIA.modules as Fm
 import json
-"""
-use this if you want to generate data uniquely every time
 
-with open("../data/pv.csv") as pv_data:
-    reader = csv.DictReader(pv_data)
-    force = []
-    voltage = []
-    acceleration1 = []
-    acceleration2 = []
-    acceleration3 = []
-    
-    #cast the strings to floats
-    for row in reader:
-        force.append(float(row["Force"]))
-        voltage.append(float(row["Voltage"]))
-        acceleration1.append(float(row["Acceleration1"]))
-        acceleration2.append(float(row["Acceleration2"]))
-        acceleration3.append(float(row["Acceleration3"]))
-
-total_size = 73728 #number of datapoints we use from pv dataset. Total is 73728
-sample_size = int(total_size*0.9)
-all_times = list(range(total_size))
-sample_times = random.sample(all_times, k=sample_size) #samples 90% of the times
-sample_times.sort()
-
-print(len(force))
-
-#making the sample dataset
-rand_force = [force[i] for i in sample_times]
-rand_voltage = [voltage[i] for i in sample_times]
-rand_acceleration1 = [acceleration1[i] for i in sample_times]
-rand_acceleration2 = [acceleration2[i] for i in sample_times]
-rand_accleration3 = [acceleration3[i] for i in sample_times]
-
-#making the train and test sets
-train_size = int(sample_size*0.75)
-test_size = sample_size - train_size
-train_times = sample_times[:train_size]
-
-train_force = rand_force[:train_size]
-train_voltage = rand_voltage[:train_size]
-train_acceleration1 = rand_acceleration1[:train_size]
-train_acceleration2 = rand_acceleration2[:train_size]
-train_acceleration3 = rand_accleration3[:train_size]
-
-test_times = sample_times[train_size:]
-test_force = rand_force[train_size:]
-test_voltage = rand_voltage[train_size:]
-test_acceleration1 = rand_acceleration1[train_size:]
-test_acceleration2 = rand_acceleration2[train_size:]
-test_acceleration3 = rand_accleration3[train_size:]
-"""
-
-#loading the train_data.json and test_data.json
-with open("../data/mock_train_data.json") as train_file:
-   train_data_dictionary = json.load(train_file)
-
-with open("../data/mock_test_data.json") as test_file:
+#loading the test data
+cwd = os.getcwd()
+mock_test_data_filepath = os.path.join(cwd, "..", "data", "mock_test_data.json")
+with open(mock_test_data_filepath) as test_file:
    test_data_dictionary = json.load(test_file)
-
-train_times = train_data_dictionary["train_times"]
-train_force = train_data_dictionary["train_force"]
-train_voltage = train_data_dictionary["train_voltage"]
-train_acceleration1 = train_data_dictionary["train_acceleration1"]
-train_acceleration2 = train_data_dictionary["train_acceleration2"]
-train_acceleration3 = train_data_dictionary["train_acceleration3"]
-train_size = len(train_force)
 
 test_times = test_data_dictionary["test_times"]
 test_force = test_data_dictionary["test_force"]
@@ -87,25 +26,19 @@ test_acceleration2 = test_data_dictionary["test_acceleration2"]
 test_acceleration3 = test_data_dictionary["test_acceleration3"]
 test_size = len(test_force)
 
-#creating a compiled train and test dataset
-train_data = [train_force, train_voltage, train_acceleration1, train_acceleration2, train_acceleration3]
+#creating a compiled test dataset
 test_data = [test_force, test_voltage, test_acceleration1, test_acceleration2, test_acceleration3]
 
 #formatting the data into torch tensors
-train_data = torch.tensor(train_data, dtype=torch.float32)
 test_data = torch.tensor(test_data, dtype=torch.float32)
 
-train_data = torch.transpose(train_data,0,1)
 test_data = torch.transpose(test_data,0,1)
 
-train_augment = torch.zeros(train_size, 3)
-train_data = torch.cat((train_data, train_augment), 1)
 test_augment = torch.zeros(test_size, 3)
 test_data = torch.cat((test_data, test_augment), 1)
 
 #modifying the method to work with the dataset. Consider saving the data at some point
 
-#this may be supurfluous
 device = 'cpu'
 seed = 0
 torch.manual_seed(seed)
@@ -206,12 +139,12 @@ predicted_acceleration1 = predictions[:,2]
 predicted_acceleration2 = predictions[:,3]
 predicted_acceleration3 = predictions[:,4]
 
-#create plots with pre-defined labels
+#create plots with pre-defined labels.
 fig, ax = plt.subplots()
-ax.plot(test_times, test_acceleration3, "b", label="Actual")
-ax.plot(test_times, predicted_acceleration3, "r", label="Predicted")
+ax.plot(test_times, test_force, "b", label="Actual")
+ax.plot(test_times, predicted_force, "r", label="Predicted")
 plt.xlabel("Time")
-plt.ylabel("Acceleration3")
+plt.ylabel("Force")
 legend = ax.legend()
 plt.grid()
 plt.show()
